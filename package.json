@@ -1,0 +1,26 @@
+{
+  "name": "ssync",
+  "description": "SuperSync - Reusable functions to simplify app structuring",
+  "version": "0.0.1",
+  "main": "dist/bsync.js",
+  "license": "MIT",
+  "author": "Steele Parker",
+  "email": "dr.parkers@gmail.com",
+  "url": "https://github.com/SteeleParker/bsync",
+  "directories": {
+    "lib" : "dist/src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SteeleParker/ssync.git"
+  },
+  "scripts": {
+    "test": "mode=TEST mocha",
+    "docs": "jsdoc -c ./jsdoc.json"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0",
+    "docco": "^0.7.0",
+    "jsdoc": "^3.4.3"
+  }
+}

@@ -1,1 +1,1 @@
-# bsync
+# ssync

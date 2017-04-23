@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: ssync/sequence</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Module: ssync/sequence</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description">Instantiates, Configures and begins execution of a new Sequencer. <br/><br />
+
+The purpose of this function is to operate as a synchronous scaffolding for asynchronous functionality. An
+array of independent aSynchronous events that rely on the results passed between each other is passed, then
+executed in the order specified in the sequence registry.<br/><br />
+
+Each function touched by the sequencer should be written such that they can take the same arguments passed
+to any other function in the sequencer for the purposes of convention over configuration, including shared config.
+Functioned consumed by the sequencer should follow the convention of function(opts, callback) and callback (err, data)
+as per http://blog.gvm-it.eu/post/22040726249/callback-conventions-in-nodejs-how-and-why and other resources.<br/><br />
+
+Each instance of a sequence should be thought of as a contained application with its own config, passed in the form of args.<br/><br />
+
+The data returned from each function in the sequence will be made available to the following function in the sequence.<br/><br />
+
+A portion of the sequencer itself will be passed into each stage of the sequence so that it can track it's current execution stage
+In the analogy of a close application, the sequencer will be the application context.<br/><br />
+
+The sequencer must be instantiated, multiple sequencers can be instantiated but the developer must handle
+the asynchronous nature of them as you would any other asynchronous functionality.</div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>config|sequence</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">object containing keys ['sequence', 'args', 'callback'] or array of {Function|Array}.<br /><br />
+If a config object is passed, only 1 argument must be passed. If arguments are implied, only 3 must be passed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><i>(optional when config object is passed otherwise required)</i><br /><br />
+args object containing args to be made available to each function within the sequence</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><i>(optional)</i><br /><br />
+callback to execute after the sequence has completed.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Steele Parker</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_sequence2.js.html">src/sequence2.js</a>, <a href="src_sequence2.js.html#line3">line 3</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Sequencer</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>//Return the sequencer for use elsewhere
+//Implied args
+var ssync = require('bsync')
+
+var sequence1 = bsync.sequence([
+    function1,
+    function2
+],{
+    arg1 : "String",
+    arg2 : true
+},function(err, data) {
+    //Do something with the result of the final output
+});</code></pre>
+
+    <pre class="prettyprint"><code>//Explicit args
+bsync.sequence({
+    sequence:[
+        function1,
+        function2
+    ],
+    args: {
+        arg1 : "String",
+        arg2 : true
+    },
+    callback: function(err, data) {
+        //Do something with the result of the final output
+    }
+});</code></pre>
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="module-ssync_sequence-Sequencer.html">Sequencer</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-ssync.html">ssync</a></li><li><a href="module-ssync_sequence.html">ssync/sequence</a></li></ul><h3>Classes</h3><ul><li><a href="module-ssync_sequence-Sequencer.html">Sequencer</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Apr 21 2017 16:06:14 GMT+1000 (AEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
