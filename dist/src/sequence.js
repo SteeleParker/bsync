@@ -1,5 +1,7 @@
 "use strict";
 
+var isPlainObject = require('is-plain-object');
+
 /**
  * @public
  * @readonly
@@ -78,9 +80,7 @@
  * Primary Sequencer Class
  * @constructor
  * @example
- *  var sequencer = new Sequencer();
- *
- *  sequencer.registerSequence({
+ *  var sequencer = new Sequencer({
  *      sequence : [
  *          function1,
  *          function2
@@ -96,179 +96,208 @@
  *
  *  sequencer.go();
  */
-var Sequencer = function() {
-    this.sequenceRegistry = [];
-};
 
-var registerSequence = function(/*Array*/ funcsToSequence) {
-    this.sequenceRegistry.push(funcsToSequence);
-};
+class Sequencer {
+    objConstructor(argObj /*Object*/) {
+        this.sequence = argObj.sequence ? argObj.sequence : null;
+        this.args = argObj.args ? argObj.args : null;
+        this.callback = argObj.callback ? argObj.callback : null;
 
-var executeSequenceRegistry = function(callback) {
-
-    if( !this.sequenceRegistry || !this.sequenceRegistry.length ) {
-        if( callback ) {
-            callback("Sequence registry was blank or null in executeSequenceRegistry");
-        }
-    }
-
-    var idx
-    for( idx in this.sequenceRegistry ) {
-        this.sequenceRegistry[idx].terminate = terminate.bind(this.sequenceRegistry[idx]);
-        processNextSequenceFunction.bind(this.sequenceRegistry[idx])();
-    }
-}
-
-/* Within the context of an individual sequence within the sequencing registry */
-var processNextSequenceFunction = function(data) {
-    this.currentIdx = this.currentIdx != null ? this.currentIdx+1 : 0;
-
-    if( this.currentIdx == 0 && this.sequence.length == 0 ) {
-        console.log("Sequencer processing was requested but there was nothing to execute.");
-
-        if( this.callback ) {
-            this.callback(null, null);
-        }
-
-        return;
-    }
-
-    var opts = {
-        sequence : this
-    };
-
-    if( this.args ) {
-        for( var prop in this.args ) {
-            opts[prop] = this.args[prop];
-        }
-    }
-
-    if( data ) {
-        for( prop in data ) {
-            if( opts[prop] != null ) {
-                console.warn("Existing property [" + prop + "] in opts to be passed to next sequence. Old value was [" + opts[prop] + "].");
+        if( argObj.callback ) {
+            if( Function.isFunction(argObj.callback) ) {
+                this.callback = argObj.callback;
+            } else {
+                var invalidCallback = "Invalid callback function passed to Sequencer.construct. A function or null must be passed.";
+                console.error("FATAL EXCEPTION", invalidCallback);
+                throw(invalidCallback);
             }
+        }
 
-            opts[prop] = data[prop];
+
+        if(this.startupErrorText) { return; }
+
+        if( Array.isArray(argObj.sequence) || Function.isFunction(argObj.sequence) ) {
+            this.sequence = argObj.sequence
+        } else {
+            this.startupErrorText = "Invalid sequence passed to Sequencer.construct. An array of functions (and arrays) or a single function must be passed.";
+
+            return
+        }
+
+
+        if( argObj.args ) {
+            if( isPlainObject(argObj.args) ) {
+                this.args = argObj.args;
+            } else {
+                this.startupErrorText = "Invalid function args passed to Sequencer.construct. An object<k, v> containing arguments must be passed.";
+
+                return;
+            }
         }
     }
+    arrConstructor(argArray /*Array*/){
+        if( !this.startupErrorText && argArray.length > 3 ) {
+            this.startupErrorText = "No more than 3 arguments can be passed to Sequencer.construct.";
+        }
 
-    if( this.sequence.length > this.currentIdx+1 ) {
-        this.hasNext = true;
-        this.next = processNextSequenceFunction.bind(this);
-    } else {
-        this.hasNext = false;
-        this.next = null;
+        if( arguments[2] ) {
+            if( Function.isFunction(arguments[2]) ) {
+                this.callback = arguments[2];
+            } else {
+                var invalidCallback = "Invalid callback function passed to Sequencer.construct. A function or null must be passed.";
+                console.error("FATAL EXCEPTION", invalidCallback);
+                throw(invalidCallback);
+            }
+        }
+
+        if(this.startupErrorText) { return; }
+
+        if( Array.isArray(argArray[0]) || Function.isFunction(argArray[0]) ) {
+            this.sequence = argArray[0];
+        } else {
+            this.startupErrorText = "Invalid sequence passed to Sequencer.construct. An array of functions (and arrays) or a single function must be passed.";
+
+            return;
+        }
+
+        if( arguments[1] ) {
+            if( isPlainObject(arguments[1]) ) {
+                this.args = arguments[1];
+            } else {
+                this.startupErrorText = "Invalid function args passed to Sequencer.construct. An object<k, v> containing arguments must be passed.";
+
+                return;
+            }
+        }
     }
-
-    var whatToExecute = this.sequence[this.currentIdx];
-
-    if( Array.isArray(whatToExecute) ) {
-        this.concurrentFunctions = whatToExecute.length;
+    construct() {
+        this.sequence = [];
+        this.callback = null;
+        this.args = null;
+        this.startupErrorText = null;
+        this.currentSequenceIdx = 0;
         this.pendingData = {};
 
-        for( var fIdx in whatToExecute ) {
-            this.sequence[this.currentIdx][fIdx](opts, handleSequencePartialComplete.bind(this));
+        if( !arguments || !arguments.length ) {
+
+            //If this is the init of the function we can ignore null args;
+            if( this.isConstructing ) return;
+
+            var errNullArguments = "arguments passed to Sequencer.constructor were null. Nothing to run. Returning";
+            console.warn(errNullArguments);
+
+            this.startupErrorText = errNullArguments;
         }
-    } else {
-        this.sequence[this.currentIdx](opts, handleSequenceFunctionComplete.bind(this));
-    }
-}
 
-var handleSequencePartialComplete = function(err, data) {
-    this.concurrentFunctions--;
-
-    if( data ) {
-        for( var prop in data ) {
-            if( this.pendingData[prop] != null ) {
-                console.warn("Existing property [" + prop + "] in opts to be passed to next sequence. Old value was [" + this.pendingData[prop] + "].");
-            }
-
-            this.pendingData[prop] = data[prop];
-        }
-    }
-
-    if( this.concurrentFunctions == 0 ) {
-        delete this.concurrentFunctions;
-
-        /* TODO: Handle errors here */
-        handleSequenceFunctionComplete.bind(this)(null, this.pendingData);
-    }
-}
-
-var handleSequenceFunctionComplete = function(err, data) {
-    if( this.hasNext && !err ) {
-        if( data )
-            this.next(data);
-        else
-            this.next();
-    } else {
-        //TODO: Handle Err/Callback
-
-        if( this.callback ) {
-            if (err) {
-                this.callback(err, data);
-            } else {
-                this.callback(null, data);
-            }
-        }
-    }
-}
-
-/*
- * Used to permaturely terminate a sequence
- */
-var terminate = function(err, data) {
-    if( this.callback ) {
-        if(err) {
-            this.callback(err, data);
+        if( !Function.isFunction(arguments[0]) && arguments.length == 1 && isPlainObject(arguments[0]) ) {
+            this.objConstructor(arguments[0]);
         } else {
-            this.callback(null, data);
+            this.arrConstructor(arguments);
+        }
+
+        if( this.startupErrorText ) {
+            if( this.callback ) this.callback(this.startupErrorText, null);
+            return this;
         }
     }
-}
+    constructor() {
+        this.isConstructing = true;
 
-Sequencer.prototype.registerSequence = registerSequence;
-Sequencer.prototype.go = executeSequenceRegistry;
-Sequencer.prototype.handleSequenceFunctionComplete = handleSequenceFunctionComplete;
-Sequencer.prototype.processNextSequenceFunction = processNextSequenceFunction;
+        this.construct.apply(this, arguments);
+
+        this.isConstructing = false;
+    }
+
+    processNextSequenceFunction() {
+
+        var prop;
+        var opts = {
+            sequence : this
+        };
+
+        if( this.args ) {
+            for( prop in this.args ) {
+                opts[prop] = this.args[prop];
+            }
+        }
+
+        if( this.pendingData ) {
+            for( prop in this.pendingData ) {
+                if( opts[prop] != null ) {
+                    console.warn("Existing property [" + prop + "] in opts to be passed to next sequence. Old value was [" + opts[prop] + "].");
+                }
+
+                opts[prop] = this.pendingData[prop];
+            }
+
+            this.pendingData = {};
+        }
+
+        var whatToExecute = this.sequence[this.currentSequenceIdx];
+        if( Array.isArray(whatToExecute) ) {
+            this.concurrentFunctions = whatToExecute.length;
+
+            for( var fIdx in whatToExecute ) {
+                whatToExecute[fIdx](opts, this.handlePartialSequenceComplete.bind(this));
+            }
+        } else {
+            whatToExecute(opts, this.handlePartialSequenceComplete.bind(this));
+        }
+    }
+
+    handlePartialSequenceComplete(err, data) {
+        if( this.concurrentFunctions ) this.concurrentFunctions--;
+
+        if( data ) {
+            for( var prop in data ) {
+                if( this.pendingData[prop] != null ) {
+                    console.warn("Existing property [" + prop + "] in opts to be passed to next sequence. Overwritten value was [" + this.pendingData[prop] + "].");
+                }
+
+                this.pendingData[prop] = data[prop]
+            }
+        }
+
+        if( err ) {
+            this.pendingErr = this.pendingErr + " " + err || err;
+        }
+
+        if( this.concurrentFunctions == 0 ) {
+            this.handleSequenceFunctionComplete();
+        }
+    }
+
+    handleSequenceFunctionComplete() {
+        if( this.sequence.length <= (this.currentSequenceIdx+1) ) {
+            if( this.callback ) {
+                this.callback(this.pendingErr, this.pendingData);
+            }
+            return;
+        }
+
+
+        this.currentSequenceIdx++;
+        this.processNextSequenceFunction();
+    }
+
+    terminate() {
+        this.currentSequenceIdx = this.sequence.length;
+    }
+
+    /**
+     * Convenience Method
+     */
+    go() {
+        this.processNextSequenceFunction();
+    }
+}
 
 function sequence() {
-    var functionsToCall, argsToApply, callback;
-
-    if( arguments.length != 1 ) {
-        //User has attempted implicit arg structure and it should be treated as such
-
-        // args[0] == Functions to call
-        functionsToCall = arguments[0];
-
-        // args[1] == Args to apply to each function
-        argsToApply = arguments[1];
-
-        // args[2] == Callback after sequence completes
-        callback = arguments[2];
-    } else {
-        functionsToCall = arguments[0].sequence;
-        argsToApply = arguments[0].args;
-        callback = arguments[0].callback;
-    }
-
-    if( !functionsToCall || !functionsToCall.length ) {
-        if( callback ) {
-            callback("Sequence registry was blank or null in executeSequenceRegistry");
-        }
-
-        return false;
-    }
 
     //Department of redundancy department
     var sequencer = new Sequencer();
 
-    sequencer.registerSequence({
-        sequence : functionsToCall,
-        args : argsToApply,
-        callback: callback
-    });
+    sequencer.construct.apply( sequencer, arguments );
 
     sequencer.go();
 
