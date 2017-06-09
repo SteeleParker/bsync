@@ -73,7 +73,7 @@ var isPlainObject = require('is-plain-object');
  *  function(err, data) {
  *      // the merged results of function1 and function2 will be
  *      // passed here instead of just the output of function2
- *  }
+ *  });
  */
 
 /**
@@ -209,7 +209,6 @@ class Sequencer {
     }
 
     processNextSequenceFunction() {
-
         var prop;
         var opts = {
             sequence : this
