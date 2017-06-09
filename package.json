@@ -1,7 +1,7 @@
 {
   "name": "ssync",
   "description": "SuperSync - Reusable functions to simplify app structuring",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "index.js",
   "license": "MIT",
   "author": "Steele Parker",
