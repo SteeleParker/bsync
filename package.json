@@ -1,14 +1,14 @@
 {
   "name": "ssync",
   "description": "SuperSync - Reusable functions to simplify app structuring",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "index.js",
   "license": "MIT",
   "author": "Steele Parker",
   "email": "dr.parkers@gmail.com",
   "url": "https://github.com/SteeleParker/bsync",
   "directories": {
-    "lib" : "/src"
+    "lib": "/src"
   },
   "repository": {
     "type": "git",
