@@ -1,5 +1,5 @@
 var assert = require('assert');
-var ssync = require('./dist/ssync.js');
+var ssync = require('./index.js');
 
 describe("Sequence", function() {
 
