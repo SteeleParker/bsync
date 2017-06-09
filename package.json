@@ -23,6 +23,6 @@
     "jsdoc": "^3.4.3"
   },
   "dependencies": {
-    "is-plain-object": "^1.0.2"
+    "is-plain-object": "2.0.3"
   }
 }
