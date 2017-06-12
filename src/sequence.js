@@ -177,6 +177,7 @@ class Sequencer {
         this.startupErrorText = null;
         this.currentSequenceIdx = 0;
         this.pendingData = {};
+        this.concurrentFunctions = 0;
 
         if( !arguments || !arguments.length ) {
 
