@@ -241,6 +241,7 @@ class Sequencer {
                 whatToExecute[fIdx](opts, this.handlePartialSequenceComplete.bind(this));
             }
         } else {
+            this.concurrentFunctions = 1;
             whatToExecute(opts, this.handlePartialSequenceComplete.bind(this));
         }
     }
